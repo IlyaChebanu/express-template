@@ -1,10 +1,13 @@
 const userModel = require('../../models/user');
 
 const getUsers = () => {
-    return new Promise((resolve, reject) => {
-        userModel.getAllUsers()
-            .then(data => resolve(data))
-            .catch(error => reject(error));
+    return new Promise(async (resolve, reject) => {
+        try {
+            const users = await userModel.getAllUsers();
+            resolve(users);
+        } catch (err) {
+            reject(err);
+        }
     });
 };
 

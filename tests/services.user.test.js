@@ -15,27 +15,26 @@ describe('User service', () => {
             expect(userPromise.then).toBeDefined();
             expect(userPromise.catch).toBeDefined();
         });
-        it('Should resolve with an array', (done) => {
+        it('Should resolve with an array', async (done) => {
             let stubUsers = sinon.stub(userModel, 'getAllUsers').callsFake(() => {
                 return Promise.resolve([]);
             });
-            user.getUsers()
-                .then(data => {
-                    expect(Array.isArray(data)).toBe(true);
-                    stubUsers.restore();
-                    done();
-                });
+            const users = await user.getUsers();
+            expect(Array.isArray(users)).toBe(true);
+            stubUsers.restore();
+            done();
         });
-        it('Should reject with an error', (done) => {
+        it('Should reject with an error', async (done) => {
             let stubUsers = sinon.stub(userModel, 'getAllUsers').callsFake(() => {
                 return Promise.reject(new Error('Some error'));
-            }); 
-            user.getUsers()
-                .catch(err => {
-                    expect(err).toEqual(Error('Some error'));
-                    stubUsers.restore();
-                    done();
-                });
+            });
+            try {
+                const users = await user.getUsers();
+            } catch (err) {
+                expect(err).toEqual(Error('Some error'));
+            }
+            stubUsers.restore();
+            done();
         })
     });
 });
