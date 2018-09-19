@@ -31,6 +31,9 @@ describe('User controller', () => {
         it('Should be json', () => {
             this.response.expect('Content-Type', 'application/json');
         });
+        it('Should not have called the real database', () => {
+            expect(this.dbSpy.callCount).toEqual(0);
+        });
         
         // Should be called last
         it('Should contain test user', (done) => {
@@ -42,9 +45,6 @@ describe('User controller', () => {
                 });
                 done();
             });
-        });
-        it('Should not have called the real database', () => {
-            expect(this.dbSpy.callCount).toEqual(0);
         });
     });
 });
