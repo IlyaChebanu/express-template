@@ -3,23 +3,27 @@ const userService    = require('../services/user');
 const sinon          = require('sinon');
 const express        = require('express');
 const request        = require('supertest');
+const db             = require('../config/database');
 
-app = express().use(userController);
+let app = express().use(userController);
+
+let getUsersStub = sinon.stub(userService, 'getUsers').callsFake(() => {
+    return Promise.resolve([{
+        id: '1',
+        email: 'test@test.test',
+        passwd: 'test'
+    }]);
+});
 
 describe('User controller', () => {
     describe('Route /', () => {
         beforeAll(() => {
-            this.getUsersStub = sinon.stub(userService, 'getUsers').callsFake(() => {
-                return Promise.resolve([{
-                    id: '1',
-                    email: 'test@test.test',
-                    passwd: 'test'
-                }]);
-            });
+            this.dbSpy = sinon.spy(db, 'query');
             this.response = request(app).get('/');
         });
         afterAll(() => {
-            this.getUsersStub.restore();
+            getUsersStub.restore();
+            this.dbSpy.restore();
         });
         it('Should respond with status code 200', () => {
             this.response.expect(200);
@@ -30,7 +34,7 @@ describe('User controller', () => {
         
         // Should be called last
         it('Should contain test user', (done) => {
-            this.response.end(function(err, res) {
+            this.response.end((err, res) => {
                 expect(res.body[0]).toEqual({
                     id: '1',
                     email: 'test@test.test',
@@ -38,6 +42,9 @@ describe('User controller', () => {
                 });
                 done();
             });
-        })
+        });
+        it('Should not have called the real database', () => {
+            expect(this.dbSpy.callCount).toEqual(0);
+        });
     });
 });
